@@ -22,7 +22,9 @@ int main()
 
 void load_table(char *table_name, DataBase *db)
 {
-    FILE *pf = fopen(table_name, "r");
+    char path[100];
+    sprintf(path, "./files/%s", table_name);
+    FILE *pf = fopen(path, "r");
     char buf[1024];
     int row = 0;
     int column = 0;
