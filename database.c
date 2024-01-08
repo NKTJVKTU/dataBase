@@ -1,8 +1,5 @@
 #include "database.h"
 
-#define COUNTRY_ID   0
-#define COUNTRY_NAME 1
-
 int main()
 {
     DataBase db;
