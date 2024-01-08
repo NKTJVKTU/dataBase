@@ -37,7 +37,7 @@ void load_table(char *table_name, DataBase *db)
         fgets(buf, 1024, pf);
         column = 0;
         if (row == 0)
-            continue;;
+            continue;
 
         char *value = strtok(buf, ",");
         while (value != NULL)
