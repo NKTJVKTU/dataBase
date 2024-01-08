@@ -5,9 +5,8 @@
 
 #define COUNTRY_ID   0
 #define COUNTRY_NAME 1
-/*
-    gcc database.c -o database && ./database
-*/
+
+// make database && ./database
 
 int main()
 {
