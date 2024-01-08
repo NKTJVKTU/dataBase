@@ -6,8 +6,6 @@
 #define COUNTRY_ID   0
 #define COUNTRY_NAME 1
 
-// make database && ./database
-
 int main()
 {
     DataBase db;
