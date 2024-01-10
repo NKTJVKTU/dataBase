@@ -2,9 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define COUNTRY_ID   0
-#define COUNTRY_NAME 1
-
 // typedef struct capital
 // {
 //     int countryid;

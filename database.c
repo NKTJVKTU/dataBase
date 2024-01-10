@@ -1,11 +1,63 @@
 #include "database.h"
 
+#define ANSI_COLOR_YELLOW  "\x1b[33m"
+#define ANSI_COLOR_RED     "\x1b[31m"
+#define ANSI_COLOR_GREEN   "\x1b[32m"
+#define ANSI_COLOR_BLUE    "\x1b[34m"
+#define ANSI_COLOR_RESET   "\x1b[0m"
+
+#define COUNTRY_ID   0
+#define COUNTRY_NAME 1
+
+#define ACTION_EXIT  0
+#define ACTION_PRINT 1
+#define ACTION_ADD   2
+
 int main()
 {
-    DataBase db;
+    system("clear");
+    static DataBase db;
     load_table("countries.csv", &db);
-    print_data(&db);
 
+    int action;
+    char welcome[80] = "Введите операцию";
+    // scanf("%d", &action);
+    // fprintf(stdout, "%d\n", action);
+
+    while (1)
+    {
+        fprintf(stdout, 
+           ANSI_COLOR_YELLOW "%s:\n" ANSI_COLOR_RESET
+            "1. Отобразить данные\n"
+            "2. Добавить данные\n"
+            "0. Выход\n"
+            "\n> ",
+            welcome
+        );
+        
+        if (scanf("%d", &action) != 1) {
+            strcpy(welcome, "Необходимо выбрать одну из трех операций");
+            scanf("%*s"); //очистка буфера
+        }
+
+        if (action != ACTION_EXIT && action != ACTION_PRINT && action != ACTION_ADD)
+        {
+            strcpy(welcome, "Необходимо выбрать одну из трех операций");
+        }
+        else if (action == ACTION_EXIT)
+        {
+            printf("\nBye Bye!\n");
+            break;;
+        }
+        else if (action == ACTION_PRINT)
+        {
+            print_data(&db);
+        }
+        else if (action == ACTION_ADD)
+            strcpy(welcome, "ADD");
+      
+    }
+    
     free(db.countries);
 
     return 0;
@@ -67,6 +119,7 @@ int get_file_rows(FILE *f)
 
     return lines;
 }
+
 
 void print_data(DataBase *db)
 {
