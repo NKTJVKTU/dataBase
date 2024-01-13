@@ -1,69 +1,13 @@
-#include "database.h"
+#include "include/database.h"
 
-#define ANSI_COLOR_YELLOW  "\x1b[33m"
-#define ANSI_COLOR_RED     "\x1b[31m"
-#define ANSI_COLOR_GREEN   "\x1b[32m"
-#define ANSI_COLOR_BLUE    "\x1b[34m"
-#define ANSI_COLOR_RESET   "\x1b[0m"
+static DataBase db;
 
-#define COUNTRY_ID   0
-#define COUNTRY_NAME 1
-
-#define ACTION_EXIT  0
-#define ACTION_PRINT 1
-#define ACTION_ADD   2
-
-int main()
+void initDataBase()
 {
-    system("clear");
-    static DataBase db;
     load_table("countries.csv", &db);
-
-    int action;
-    char welcome[80] = "Введите операцию";
-    // scanf("%d", &action);
-    // fprintf(stdout, "%d\n", action);
-
-    while (1)
-    {
-        fprintf(stdout, 
-           ANSI_COLOR_YELLOW "%s:\n" ANSI_COLOR_RESET
-            "1. Отобразить данные\n"
-            "2. Добавить данные\n"
-            "0. Выход\n"
-            "\n> ",
-            welcome
-        );
-        
-        if (scanf("%d", &action) != 1) {
-            strcpy(welcome, "Необходимо выбрать одну из трех операций");
-            scanf("%*s"); //очистка буфера
-        }
-
-        if (action != ACTION_EXIT && action != ACTION_PRINT && action != ACTION_ADD)
-        {
-            strcpy(welcome, "Необходимо выбрать одну из трех операций");
-        }
-        else if (action == ACTION_EXIT)
-        {
-            printf("\nBye Bye!\n");
-            break;;
-        }
-        else if (action == ACTION_PRINT)
-        {
-            print_data(&db);
-        }
-        else if (action == ACTION_ADD)
-            strcpy(welcome, "ADD");
-      
-    }
-    
-    free(db.countries);
-
-    return 0;
 }
 
-void load_table(char *table_name, DataBase *db)
+static void load_table(char *table_name, DataBase *db)
 {
     char path[100];
     sprintf(path, "./files/%s", table_name);
@@ -103,11 +47,10 @@ void load_table(char *table_name, DataBase *db)
             column++;
         }
     }
-    
     fclose(pf);
 }
 
-int get_file_rows(FILE *f)
+static int get_file_rows(FILE *f)
 {
     char c;
     int lines = 0;
@@ -120,9 +63,42 @@ int get_file_rows(FILE *f)
     return lines;
 }
 
-
-void print_data(DataBase *db)
+void get_country_by_id(int country_id)
 {
-    for (int i = 0; i <= db->elements_count - 1; i++)
-        printf("i: %i: id: %d name: %s\n", i, db->countries[i].id, db->countries[i].name);
+    for (int i = 0; i <= db.elements_count - 1; i++)
+        if (db.countries[i].id == country_id)
+            printf("id: %d name: %s\n", db.countries[i].id, db.countries[i].name);
+}
+
+void get_country_by_name(char *county_name)
+{
+    for (int i = 0; i <= db.elements_count - 1; i++)
+        if (strcmpi(db.countries[i].name, county_name) == 0)
+            printf("id: %d name: %s\n", db.countries[i].id, db.countries[i].name);
+}
+
+void print_all_data()
+{
+    for (int i = 0; i <= db.elements_count - 1; i++)
+        printf("id: %d name: %s\n", db.countries[i].id, db.countries[i].name);
+}
+
+static int strcmpi(char* s1, char* s2)
+{
+    int i;
+     
+    if(strlen(s1) != strlen(s2))
+        return -1;
+         
+    for(i = 0; i < strlen(s1); i++){
+        if(toupper(s1[i]) != toupper(s2[i]))
+            return s1[i] - s2[i];
+    }
+    
+    return 0;
+}
+
+void free_data()
+{
+    free(db.countries);
 }
