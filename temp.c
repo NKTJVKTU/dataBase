@@ -7,15 +7,17 @@
 #include <sys/mman.h>
 
 #define DATABASE_FILE "database.db"
-#define MAX_TABLES 5
+#define MAX_TABLES 50
 #define PAGESIZE 4096
-
+/*
+    gcc main.c -o main && ./main   // создать файл mmap_file.txt перед выполнением
+*/
 struct Table {
     int id;
     char name[30];
 };
 
-struct Tables
+struct DataBase
 {
     struct Table tables[MAX_TABLES];
     int tables_count;
@@ -23,21 +25,18 @@ struct Tables
 
 void create_table(char *table_name);
 void write_data(void);
-void read_file(void);
+void init(void);
 
-static struct Tables t_arr;
+static struct DataBase db;
 
 int main(void)
 {
-    create_table("table_one");
-    create_table("table_two");
-    create_table("table_three");
-    create_table("table_four");
-    create_table("table_five");
+    init();
 
-    write_data();
-
-    read_file();
+    //create_table("table_three");
+    
+    for (int i = 0; i < db.tables_count; i++)
+        printf("id: %d name: %s\n", db.tables[i].id, db.tables[i].name);
 
     return 0;
 }
@@ -45,17 +44,18 @@ int main(void)
 void create_table(char *table_name)
 {
     struct Table table;
-    table.id = t_arr.tables_count;
+    table.id = db.tables_count;
     strcpy(table.name, table_name);
 
     //t_arr.tables = malloc(sizeof(struct Table) * (t_arr.tables_count + 1));
-    t_arr.tables[t_arr.tables_count] = table;
-    t_arr.tables_count = t_arr.tables_count + 1;
+    db.tables[db.tables_count] = table;
+    db.tables_count = db.tables_count + 1;
+    write_data();
 }
 
 void write_data(void)
 {
-    struct Tables *map;
+    struct DataBase *map;
     int fd, sz, result;
 
     fd = open(DATABASE_FILE, O_RDWR | S_IRUSR | S_IWUSR);
@@ -70,15 +70,15 @@ void write_data(void)
         printf("\n\"%s \" could not open\n", DATABASE_FILE);
         exit(2);
     }
-    printf("file size: %ld\n", st.st_size);
 
-    result = lseek(fd, (sizeof(struct Tables)), SEEK_SET); // (st.st_size + sizeof(struct Tables)) -1 need? 
+    result = lseek(fd, sizeof(struct DataBase), SEEK_SET); // (st.st_size + sizeof(struct Tables)) -1 need? 
     if (result == -1)
     {
         close(fd);
         perror("Error calling lseek() to 'stretch' the file");
         exit(EXIT_FAILURE);
     }
+
     result = write(fd, "", 1);
     if (result != 1)
     {
@@ -87,7 +87,7 @@ void write_data(void)
         exit(EXIT_FAILURE);
     }
 
-    map = (struct Tables*)mmap(0, (sizeof(struct Tables)), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    map = (struct DataBase*)mmap(0, (sizeof(struct DataBase)), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
     if (map == MAP_FAILED)
     {
@@ -95,17 +95,17 @@ void write_data(void)
         perror("Error mmapping the file");
         exit(EXIT_FAILURE);
     }
-    map[0] = t_arr;
+    map[0] = db;
 
     munmap(map, st.st_size);
     close(fd);
 }
 
-void read_file(void)
+void init(void)
 {
     int fd, sz;
     fd = open(DATABASE_FILE, O_RDONLY);
-    struct Tables *map;
+    struct DataBase *map;
 
     struct stat st;
     if (fstat(fd, &st) == -1)
@@ -113,10 +113,17 @@ void read_file(void)
         printf("\n\"%s \" could not open\n", DATABASE_FILE);
         exit(2);
     }
-    printf("file size: %ld\n", st.st_size);
 
-    map = (struct Tables *)mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+    if (st.st_size == 0)
+    {
+        fprintf(stdout, "First init database\n");
+        // create_work_tables();
+    }
+    else
+    {
+        map = (struct DataBase *)mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+        db = *map;
+    }
 
-    for (int i = 0; i < MAX_TABLES; i++)
-        fprintf(stdout, "id: %d name: %s\n", map->tables[i].id, map->tables[i].name);
+    close(fd);
 }
